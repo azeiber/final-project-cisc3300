@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thrift Locator</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+    <link rel="stylesheet" href="../styles/homepg.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display&family=Raleway:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Header with navigation (Navbar) -->
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-light bg-light fixed-top">
+            <a class="navbar-brand" href="./index.html">Thrift Finder</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" href="thrift-hub.html">Thrift Hub</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="my-account.html">My Account</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="about.html">About</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="contact.html">Contact</a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Search bar for map -->
+    <main class="container mt-5 pt-5">
+        <h1>Find Nearby Thrift Stores</h1>
+        <p>Use the search bar below to find thrift stores near your location:</p>
+
+        <!-- Search bar (connected to the map) -->
+        <input id="location-input" type="text" class="form-control" placeholder="Enter a location" />
+        <button onclick="searchStores()" class="btn btn-primary mt-2">Search</button>
+
+        <!-- Map container -->
+        <div id="map" style="height: 400px; width: 100%; margin-top: 20px;"></div>
+
+        <!-- Store Suggestion Form -->
+        <div class="store-suggestion-form mt-5">
+            <h3>Is there a store you don't see on the map? Enter the details below and we will get it added!</h3>
+            <div class="store-suggestion-form">
+                
+                <form id="store-form" method="POST">
+                    <label for="store-name">Store Name:</label>
+                    <input type="text" id="store-name" name="store_name" required class="form-control" placeholder="Enter store name" />
+                    
+                    <label for="store-address" class="mt-2">Store Address:</label>
+                    <input type="text" id="store-address" name="store_address" required class="form-control" placeholder="Enter store address" />
+                    
+                    <button type="submit" class="btn btn-primary mt-3">Submit Suggestion</button>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer>
+        <p>&copy; 2024 Thrift Finder. All rights reserved.</p>
+    </footer>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+    <script>
+        // Wait for the document to be ready
+        document.addEventListener("DOMContentLoaded", function () {
+    
+            // Get the form element
+            const form = document.getElementById("store-form");
+    
+            // Add an event listener for the form submission
+            form.addEventListener("submit", function(event) {
+                event.preventDefault(); // Prevent the default form submission (page reload)
+    
+                // Get the form data
+                const formData = new FormData(form);
+    
+                // Use AJAX to submit the form data
+                const xhr = new XMLHttpRequest();
+                xhr.open("POST", form.action, true); // Use the form's action (URL to the controller)
+                xhr.setRequestHeader("Accept", "application/json"); // Expect JSON response
+    
+                // Set up a callback to handle the response
+                xhr.onload = function() {
+                    if (xhr.status === 200) {
+                        // On success, clear the form fields
+                        document.getElementById("store-name").value = "";
+                        document.getElementById("store-address").value = "";
+    
+                        alert("Store suggestion submitted successfully!");
+                    } else {
+                        // On error, alert the user
+                        alert("There was an issue submitting the suggestion. Please try again.");
+                    }
+                };
+    
+                // Send the form data
+                xhr.send(formData);
+            });
+        });
+    </script>
+    
+    <!-- Google Maps API -->
+    <script async
+        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA_C9uKKPSm_liFq5oDGqC-SFRXkkHFVok&callback=initMap&libraries=places,marker,core"></script>
+
+    <script>
+        let map;
+        let service;
+
+        async function initMap() {
+            const { Map, InfoWindow } = await google.maps.importLibrary("maps");
+            const center = new google.maps.LatLng(40.730610, -73.935242); // Default: New York City
+
+            map = new Map(document.getElementById("map"), {
+                center: center,
+                zoom: 14,
+            });
+
+            service = new google.maps.places.PlacesService(map);  // PlacesService initialized
+            console.log("Map initialized, ready for search.");
+        }
+
+        async function searchStores() {
+            const locationInput = document.getElementById('location-input').value.trim();
+            let searchLocation = locationInput ? locationInput : "New York City"; // Default to New York City if input is empty
+
+            // Get geocode for location entered by user
+            const geocoder = new google.maps.Geocoder();
+            geocoder.geocode({ address: searchLocation }, (results, status) => {
+                if (status === google.maps.GeocoderStatus.OK) {
+                    const userLocation = results[0].geometry.location;
+                    console.log(`User location found: ${userLocation}`);
+                    map.setCenter(userLocation);
+                    nearbySearch(userLocation);  // Call to nearbySearch
+                } else {
+                    alert('Error geocoding location: ' + status);
+                    console.error(`Geocoding error: ${status}`);
+                }
+            });
+        }
+
+        async function nearbySearch(center) {
+            const request = {
+                location: center, // User's location
+                radius: 1000, // Search radius in meters (1000m = 1km)
+                keyword: 'thrift store', // Start with "thrift store"
+            };
+
+            console.log("Making Nearby Search request:", request);
+
+            // Call to nearbySearch method
+            service.nearbySearch(request, callback);
+        }
+
+        // Callback to process search results
+        function callback(results, status) {
+            if (status === google.maps.places.PlacesServiceStatus.OK) {
+                const bounds = new google.maps.LatLngBounds();
+
+                results.forEach((place) => {
+                    console.log(`Found place: ${place.name}, Address: ${place.vicinity}`);
+
+                    const marker = new google.maps.Marker({
+                        map: map,
+                        position: place.geometry.location,
+                        title: place.name,
+                    });
+
+                    bounds.extend(place.geometry.location);
+
+                    // Adding infoWindow on marker click
+                    marker.addListener('click', () => {
+                        const infoWindow = new google.maps.InfoWindow({
+                            content: `<strong>${place.name}</strong><br>${place.vicinity}`,
+                        });
+                        infoWindow.open(map, marker);
+                    });
+                });
+
+                map.fitBounds(bounds); // Adjust the map to show all markers
+            } else {
+                alert("No stores found nearby.");
+                console.log("Status: ", status); // Log status for debugging
+            }
+        }
+    </script>
+</body>
+</html>

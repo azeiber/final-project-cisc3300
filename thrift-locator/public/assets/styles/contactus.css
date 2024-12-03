@@ -1,0 +1,38 @@
+body {
+    font-family: Playfair Display;
+    margin: 0;
+    padding: 0;
+    background-color: #f9f9f9; 
+    color: #333; 
+    line-height: 1.6;
+}
+
+header h1 {
+    margin: 0;
+    font-size: 2rem;
+}
+
+/* Main Section */
+main {
+    font-family: Playfair Display;
+    padding: 2rem;
+    text-align: center;
+}
+
+#map {
+    height: 400px;
+    width: 100%;
+}
+
+/* Footer Styling */
+footer {
+    background-color: palevioletred; 
+    color: white;  
+    text-align: center;
+    padding: 1rem;
+    margin-top: 2rem;
+}
+
+footer p {
+    margin: 0;
+}
