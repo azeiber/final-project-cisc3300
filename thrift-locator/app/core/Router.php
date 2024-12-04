@@ -4,16 +4,19 @@ namespace app\core;
 
 use app\controllers\MainController;
 use app\controllers\ContactController;
+use app\controllers\StoreController;
 
 class Router {
     public $urlArray;
 
     function __construct()
     {
+        // var_dump("Router initialized"); 
         $this->urlArray = $this->routeSplit();
         $this->handleMainRoutes();
         $this->handleContactRoutes();
         $this->handlePageRoutes();
+        $this->handleStoreRoutes();
     }
 
     protected function routeSplit() {
@@ -40,18 +43,15 @@ class Router {
     // }
 
     protected function handleMainRoutes() {
-        if ($this->urlArray[1] === 'index.html' || $this->urlArray[1] || $this->urlArray[0] === '') {
-            // && $_SERVER['REQUEST_METHOD'] === 'GET')
+        // var_dump($this->urlArray);
+        if (empty($this->urlArray[0]) || isset($this->urlArray[1]) && $this->urlArray[1] === 'index.html') {
             $mainController = new MainController();
             $mainController->homepage();
         }
     }
 
     protected function handleContactRoutes() {
-
-        // debugging (delete later)
-        var_dump($this->urlArray, $_SERVER['REQUEST_METHOD']);
-
+        // var_dump($this->urlArray, $_SERVER['REQUEST_METHOD']);
 
         $contactController = new ContactController();
 
@@ -86,15 +86,40 @@ class Router {
         }
     }
 
+     // Handle store-related routes
+     protected function handleStoreRoutes() {
+        // var_dump("Handling store routes");
+        $storeController = new StoreController();
+
+        var_dump($this->urlArray); 
+
+        if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($this->urlArray[1]) && $this->urlArray[1] === 'random_stores') {
+            $storeController->getRandomStore(); 
+            return;
+        }
+
+        if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($this->urlArray[1] === 'api') && $this->urlArray[2] === 'store_suggestions') {
+            $storeController->addStore();
+            return;
+        }
+    }
+
     // Other page routes
     protected function handlePageRoutes(): void {
         $mainController = new MainController();
 
-        if ($this->urlArray[1] === 'about.html' && $_SERVER['REQUEST_METHOD'] === 'GET')
-        {
+         // Handle about page
+         if (isset($this->urlArray[1]) && $this->urlArray[1] === 'about.html') {
             $mainController->about();
         }
-
+        // Handle my-account page
+        elseif (isset($this->urlArray[1]) && $this->urlArray[1] === 'my-account.html') {
+            $mainController->myAccount();
+        }
+        // Handle thrift-hub page
+        elseif (isset($this->urlArray[1]) && $this->urlArray[1] === 'thrift-hub.html') {
+            $mainController->thriftHub();
+        }
         // if ($this->urlArray[1] === 'contact' && $_SERVER['REQUEST_METHOD'] === 'GET')
         // {
         //     $mainController->contact();

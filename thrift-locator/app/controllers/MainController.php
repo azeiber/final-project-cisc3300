@@ -15,6 +15,13 @@ class MainController extends Controller
         $this->returnView(pathToView: './assets/views/about.html');
     }
 
+    public function myAccount(): void {
+        $this->returnView(pathToView: './assets/views/my-account.html');
+    }
+
+    public function thriftHub(): void {
+        $this->returnView(pathToView: './assets/views/thrift-hub.html');
+    }
     // public function contact(): void {
     //     $this->returnView(pathToView: './assets/views/contact.html');
     // }
